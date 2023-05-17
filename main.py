@@ -7,79 +7,23 @@
 #-----------------------------------------------------------------------------
 '''   Description: Adventure Games'''
 #-----------------------------------------------------------------------------
-import map
+from map import *
+from character import *
+from item import *
 
 #Create a variable "row" with a value of 0
-row = 0
-col = 0
+row = start_point[0]
+col = start_point[1]
 
-#Create a list called inventory
-inventory = [player]
+#Create a list of NPCs
 
 playing = True
+inventory = []
 
 # tile information
 #Create a list called tile
 #The first assignment is "start", which means that tile[0] is "start",
 #and so on
-#Description about objects "Holy Sword", "Holy Sword", and "Holy Armor".
-objects = {
-  "Holy Sword": {
-    "Description": "You found a shining sword inserted" +
-    " in a stone. That should be the Holy Sword.",
-    "Status": "in stone",
-    "Location": [2, 1],
-    "Action": ["take", "leave"],
-    "Requirement": ["key", None, None]
-  },
-  "Holy Sword": {
-    "Description":
-    "You found a box, opened it, and" + " found a very beautiful helmet.",
-    "Status": "in box",
-    "Location": [0, 1],
-    "Action": ["take", "leave"],
-    "Requirement": [None, None]
-  },
-  "Holy Armor": {
-    "Description":
-    "You notice that there seems to be" +
-    " light in front of you, and after walking over, you find armor on" +
-    " the scorched ground.",
-    "Status":
-    "on ground",
-    "Location": [3, 3],
-    "Action": ["take", "leave"],
-    "Requirement": [None, None]
-  }
-}
-
-#Description about npc "Little Demon Legion", "Eric", and "Injured Old Man".
-npcs = {
-  "Little Demon Legion": {
-    "Description": "Disgusting things, but it" +
-    " seems that I need some more lethal weapons to defeat them.",
-    "Status": "screaming",
-    "Location": [4, 1],
-    "Action": ["fight", "leave"],
-    "Requirement": [None, None]
-  },
-  "Eric": {
-    "Description":
-    "He has an evil energy, and that energy" + " continues to grow.",
-    "Status": "in sky",
-    "Location": [4, 4],
-    "Action": ["fight", "leave"],
-    "Requirement": [None, None]
-  },
-  "Injured Old Man": {
-    "Description": "I can't believe there are" + " still living humans here.",
-    "Status": "in room",
-    "Location": [2, 0],
-    "Action": ["talk", "leave"],
-    "Requirement": [None, None]
-  }
-}
-
 
 # Functions ------------------------------------------------------------------
 def walkto():
@@ -96,11 +40,11 @@ def walkto():
       canUp = True
       print("you can go up - type:'up'")
 
-    if row < map.max_row:
+    if row < island_map.max_row:
       canDown = True
       print("you can go down - type:'down'")
 
-    if col < map.max_col:
+    if col < island_map.max_col:
       canRight = True
       print("you can go right - type:'right'")
 
@@ -131,27 +75,61 @@ def walkto():
       waychoice = True
 
 
+#Here is the code where players can pick up items
 def Inspectplace1():
+  #Positioning items
   global row, col, inventory, objects
-  found_object = False
-  location_description = map.map[row][col]
+  InspectAction(objects)
+
+#This is the code for different npcs on the map
+def Inspectnpc1():
+  #Positioning npcs
+  global row, col, inventory, npcs
+  InspectAction(npcs)
+
+def InspectAction(objects):
+  global row, col, inventory, playing
   for object in objects:
     object_row = objects[object]["Location"][0]
     object_col = objects[object]["Location"][1]
-    if object_row == row and object_col == col:
+    object_status = objects[object]["status"]
+    if object_row == row and object_col == col and object_status:
+      #Description that will appear after finding the item
       print(f"{objects[object]['Description']}")
+      Choose = objects[object]["Action"]
+      for do in Choose:
+        print((f"- {do.title()}"))
+      #player input, can recognize player's capitalization
+      userInput = input("You choice: ").lower()
+      #Battle Code
+      if userInput == Choose[0]:
+        
+        if Choose[0] == "take":
+          currentItem = objects[object]["armor"]
+          print(f"{objects[object]['Take']}")
+          #Add items to the inventory
+          inventory += currentItem.name
+          MainPlayerPower.armored(currentItem.armor, currentItem.damage)
+          objects[object]["status"] = False
+          
+        elif Choose[0] == "fight":
+          print(f"{objects[object]['fight']}")
+          if fight(MainPlayerPower, objects[object]['Power']):
+            print("You Win!")
+            objects[object]["status"] = False
+            if end_point[0] == row and end_point[1] == col:
+              print("You've saved the world! Nice Job!")
+              playing = False
+              
+          elif not fight(MainPlayerPower, objects[object]['Power']):
+            print("You lost! Try to get stronger!")
 
+      elif userInput == Choose[1]:
+        print("You leave")
 
-def Inspectnpc1():
-  global row, col, inventory, npcs
-  found_npc = False
-  location_description = map.map[row][col]
-  for npc in npcs:
-    npc_row = npcs[npc]["Location"][0]
-    npc_col = npcs[npc]["Location"][1]
-    if npc_row == row and npc_col == col:
-      print(f"{npcs[npc]['Description']}")
-
+      else:
+        print("Invalid input!")
+        
 
 # try-except-else-finally statements-----------------------------------------
 def MainMenu():
@@ -169,7 +147,7 @@ def MainMenu():
           print((f"{i} - ({do.title()})"))
         userInput = int(input("You choice: "))
         orientating = False
-        
+
       except ValueError:
         print("this is not a number")
         continue
@@ -178,25 +156,26 @@ def MainMenu():
         if userInput == 1:
           print("You went to the area ahead")
           walkto()
-          
+
         elif userInput == 2:
           print("You look around.")
           #Function call
           Inspectplace1()
           Inspectnpc1()
-
+        
         #if the user chooses to quit, the game quit
         elif userInput == 3:
           playing = False
-          
+
         else:
           print("Invalid input!")
           orientating = True
         break
-        
+
       finally:
-        print("player still alive")
-        
+        print("Round ended")
+        print("you are now at " + str(row) + ", " + str(col))
+
 
 # Main ----------------------------------------------------------------------
 # Open in read mode
@@ -214,7 +193,7 @@ print(
   "+---------------------------------------------------------------------" +
   "--------------+")
 
-for mapRow in map.map:
+for mapRow in island_map.detail:
   for mapCol in mapRow:
     print("| {:{}}".format(mapCol, max_length), end="")
   print(
@@ -222,24 +201,8 @@ for mapRow in map.map:
     "-------------------+")
 
 while playing:
-  location_description = map.map[row][col]
-  for tile in map.tiles:
+  location_description = island_map.detail[row][col]
+  for tile in tiles:
     if tile == location_description:
-      print(map.tiles[tile]["Description"])
-
-#class 
-class player:
-  def __init__(self, armor, damage)
-  global inventory
-  self.armor = armor
-  self.damage = damage
-  self.inventory = inventory
-
-  MainPlayer = player(1, 1)
-
-  Eric = player(4, 4)
-
-  LittleDemonLegion = player(2, 2)
-  
-
+      print(tiles[tile]["Description"])
   MainMenu()

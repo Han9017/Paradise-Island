@@ -32,10 +32,22 @@ tiles = {
 }
 
 #map------------------------------------------------------------------
-map = [[tile[0], tile[1], tile[2], tile[6]],
-       [tile[1], tile[4], tile[7], tile[1]],
-       [tile[2], tile[1], tile[4], tile[2]],
-       [tile[3], tile[2], tile[1], tile[5]]]
+map_d = [[tile[0], tile[1], tile[2], tile[6]],
+        [tile[1], tile[4], tile[7], tile[1]],
+        [tile[2], tile[1], tile[4], tile[2]],
+        [tile[3], tile[2], tile[1], tile[6]],
+        [tile[2], tile[4], tile[7], tile[5]]]
 
-max_row = 3
-max_col = 3
+start_point = [0, 0]
+end_point = [4, 3]
+
+class map:
+ def __init__(self, detail, max_row, max_col, start_point, end_point):
+    self.detail = detail
+    self.max_row = max_row
+    self.max_col = max_col
+    self.start_point = start_point
+    self.end_point = end_point
+
+island_map = map(map_d, 4, 3, start_point, end_point)
+
